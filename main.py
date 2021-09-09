@@ -63,6 +63,9 @@ while not done:
     keys = pygame.key.get_pressed()
     paddle_y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * paddle_change_y
 
+    #Stops Paddle from moving down off screen but not up
+    if paddle_y > SCREEN_HEIGHT - paddle_y: paddle_y = SCREEN_HEIGHT - paddle_y
+    
     #Refresh Screen
     pygame.display.flip()
  
