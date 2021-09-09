@@ -65,11 +65,6 @@ while not done:
     keys = pygame.key.get_pressed()
     paddle_y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * paddle_change_y
 
-    def main ():
-        paddle_y = (650, 450)
-        screen_rect = screen.paddle_y()
-        paddle_y.rect.clamp_ip(screen_rect)
-
     #Refresh Screen
     pygame.display.flip()
  
