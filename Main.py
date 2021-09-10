@@ -1,19 +1,19 @@
 import pygame, sys, random
 
-# Setup
+# -- Setup --
 pygame.init()
 
-# Window Settings
+# -- Window Settings --
 window_height = 650
 window_width = 800
 fps = 120
 clock = pygame.time.Clock()
 
-# Colours
+# -- Colours --
 color_white = (255, 255, 255)
 color_black = (0, 0, 0)
 
-# Window
+# -- Window --
 game_window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Pong')
 
@@ -92,7 +92,7 @@ class Ball(pygame.sprite.Sprite):
         if self.rect.bottom > window_height:
             self.dy *= -1
         
-        #Collision with paddle
+        # Collision with paddle
         collision = pygame.sprite.spritecollideany(ball, all_sprites)
         if collision:
             if collision == player1:
@@ -116,6 +116,7 @@ class Score():
         self.score2 = 0
         self.score_font = pygame.font.SysFont(None, 100)
     
+    # Resets Ball back to spawn
     def update(self):
         if ball.rect.right < 0:
             self.score2 += 1
