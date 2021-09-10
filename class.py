@@ -1,85 +1,167 @@
-import pygame 
+import pygame, sys, random
 
-#Setup
+# Setup
 pygame.init()
 
-#Window Settings
-window_height = 800
-window_width = 600
-fps = 60
+# Window Settings
+window_height = 650
+window_width = 800
+fps = 120
 clock = pygame.time.Clock()
 
-#Colours
-black = (255, 255, 255)
-white = (0  , 0  , 0  )  
+# Colours
+color_white = (255, 255, 255)
+color_black = (0, 0, 0)
 
-#Window 
-game_window = pygame.display.set_mode((window_height, window_width))
+# Window
+game_window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Pong')
 
-# --- Ball ---
-class Ball():
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.change_x = 0
-        self.change_y = 0
-        self.width = 35
-        self.height = 35
-        self.color = (0, 0, 0)
 
-        def movement(self):
-            self.x += self.change_x
-            self.y += self.change_y
+class Player1(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 80))
+        self.image.fill(color_white)
+        self.rect = self.image.get_rect()
+        self.rect.left = 25
+        self.rect.centery = window_height / 2
+
+    def update(self):
+        self.dy = 0
+
+        # Movement
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_w]:
+            self.dy = -3
+        if keystate[pygame.K_s]:
+            self.dy= 3
+        self.rect.y += self.dy
+
+        # Clamp Paddle to Window
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > window_height:
+            self.rect.bottom = window_height
+
+
+class Player2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 80))
+        self.image.fill(color_white)
+        self.rect = self.image.get_rect()
+        self.rect.right = window_width - 25
+        self.rect.centery = window_height / 2
+
+    def update(self):
+        self.dy = 0
         
-        def draw(self, game_window):
-            pygame.draw.rect(game_window, self.color, [self.x, self.y], self.width, self.height)
+        # Movement
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_UP]:
+            self.dy = -3
+        if keystate[pygame.K_DOWN]:
+            self.dy= 3
+        self.rect.y += self.dy
 
-class Paddle():
+        # Clamp Paddle to Window
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > window_height:
+            self.rect.bottom = window_height
+
+
+class Ball(pygame.sprite.Sprite):
     def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.change_y = 0
-        self.width = 35
-        self.height = 35
-        self.color = (0, 0, 0)
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 10))
+        self.image.fill(color_white)
+        self.rect = self.image.get_rect()
+        self.rect.center = (window_width / 2, window_height / 2)
+        self.dx = random.choice([-1, 1])
+        self.dy = random.choice([-2, -1, 1, 2])
 
-        def update(self):
-            keys = pygame.key.get_pressed()
-            self.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * self.change_y
+    def update(self):
+        self.rect.x += self.dx
+        self.rect.y += self.dy
 
-            if self.rect.top < 0:
-                self.rect.top = 0
-            if self.rect.bottom > window_height:
-                self.rect.bottom = window_height
+        # Clamp Ball to Window
+        if self.rect.top < 0:
+            self.dy *= -1
+        if self.rect.bottom > window_height:
+            self.dy *= -1
+        
+        #Collision with paddle
+        collision = pygame.sprite.spritecollideany(ball, all_sprites)
+        if collision:
+            if collision == player1:
+                self.rect.x -= self.dx
+                self.dx *= -1
+                self.dx += random.choice([0, 1])
+            if collision == player2:
+                self.rect.x -= self.dx
+                self.dx *= -1
+                self.dx += random.choice([0, 1])
+            if self.dy == 0:
+                self.dy += random.choice([-1, 1])
+            if self.dy <= 0:
+                self.dy += -random.choice([-1, 0, 1])
+            if self.dy >= 0:
+                self.dy += random.choice([-1, 0, 1])
 
-        def draw(self, game_window):
-            pygame.draw.rect(game_window, self.color, [self.x, self.y], self.width, self.height)
+class Score():
+    def __init__(self):
+        self.score1 = 0
+        self.score2 = 0
+        self.score_font = pygame.font.SysFont(None, 100)
+    
+    def update(self):
+        if ball.rect.right < 0:
+            self.score2 += 1
+            ball.__init__()
+        if ball.rect.left > window_width:
+            self.score1 += 1
+            ball.__init__()
+        self.player1_score = self.score_font.render(str(self.score1), True, color_white, color_black)
+        self.player2_score = self.score_font.render(str(self.score2), True, color_white, color_black)
+    
+    def draw(self):
+        game_window.blit(self.player1_score,(window_width / 4, window_height / 8))
+        game_window.blit(self.player2_score,(window_width * 3 / 4, window_height / 8))
 
+# --- Sprite Groups ---
+all_sprites = pygame.sprite.Group()
+ball_sprite = pygame.sprite.GroupSingle()
 
+player1 = Player1()
+all_sprites.add(player1)
+player2 = Player2()
+all_sprites.add(player2)
+ball = Ball()
+ball_sprite.add(ball)
+
+# -- Score --
+score = Score()
+score.__init__()
 
 # -------- Main Program Loop -----------
 while True:
+    clock.tick(fps)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            sys.exit()
 
-    Square = Ball()
-    Square.x = 50
-    Square.y = 50
-    Square.change_x = 3
-    Square.change_y = 3
-    Square.color = [0, 0, 0]
-    Square.draw(game_window)
+    all_sprites.update()
+    ball_sprite.update()
+    score.update()
 
-    Player = Paddle()
-    Player.x = 25
-    Player.y = 350
-    Player.change_y = 5
-    Player.color = [0, 0, 0]
-    Player.move()
-    Player.draw(game_window)
+    game_window.fill(color_black)
 
+    score.draw()
 
-    #Refresh Screen 
-    pygame.display.update()
+    all_sprites.draw(game_window)
+    ball_sprite.draw(game_window)
+    pygame.display.flip()
