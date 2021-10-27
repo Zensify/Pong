@@ -35,7 +35,7 @@ class Player1(pygame.sprite.Sprite):
         if keystate[pygame.K_w]:
             self.dy = -3
         if keystate[pygame.K_s]:
-            self.dy= 3
+            self.dy = 3
         self.rect.y += self.dy
 
         # Clamp Paddle to Window
@@ -56,13 +56,13 @@ class Player2(pygame.sprite.Sprite):
 
     def update(self):
         self.dy = 0
-        
+
         # Movement
         keystate = pygame.key.get_pressed()
         if keystate[pygame.K_UP]:
             self.dy = -3
         if keystate[pygame.K_DOWN]:
-            self.dy= 3
+            self.dy = 3
         self.rect.y += self.dy
 
         # Clamp Paddle to Window
@@ -91,9 +91,9 @@ class Ball(pygame.sprite.Sprite):
             self.dy *= -1
         if self.rect.bottom > window_height:
             self.dy *= -1
-        
+
         # Collision with paddle
-        collision = pygame.sprite.spritecollideany(ball, all_sprites)
+        collision = pygame.sprite.spritecollideany(ball, player_sprites)
         if collision:
             if collision == player1:
                 self.rect.x -= self.dx
@@ -102,7 +102,7 @@ class Ball(pygame.sprite.Sprite):
             if collision == player2:
                 self.rect.x -= self.dx
                 self.dx *= -1
-                self.dx += random.choice([-1, 0, 1])
+                self.dx += random.choice([-1, 0])
             if self.dy == 0:
                 self.dy += random.choice([-1, 1])
             if self.dy <= 0:
@@ -111,7 +111,7 @@ class Ball(pygame.sprite.Sprite):
                 self.dy += random.choice([-1, 0, 1])
             if self.dx >= 765:
                 self.dx = 755
-    
+
 
 class Score():
     def __init__(self):
@@ -119,7 +119,7 @@ class Score():
         self.score2 = 0
         self.score_font = pygame.font.SysFont(None, 100)
         self.font = pygame.font.SysFont("Verdana", 100)
-    
+
     # Resets Ball back to spawn
     def update(self):
         if ball.rect.right < 0:
@@ -128,46 +128,52 @@ class Score():
         if ball.rect.left > window_width:
             self.score1 += 1
             ball.__init__()
-        self.player1_score = self.score_font.render(str(self.score1), True, color_white, color_black)
-        self.player2_score = self.score_font.render(str(self.score2), True, color_white, color_black)
-    
+        self.player1_score = self.score_font.render(str(self.score1), True,
+                                                    color_white, color_black)
+        self.player2_score = self.score_font.render(str(self.score2), True,
+                                                    color_white, color_black)
+
     def draw(self):
-        game_window.blit(self.player1_score,(window_width / 4, window_height / 8))
-        game_window.blit(self.player2_score,(window_width * 3 / 4, window_height / 8))
-        
+        game_window.blit(self.player1_score,
+                         (window_width / 4, window_height / 8))
+        game_window.blit(self.player2_score,
+                         (window_width * 3 / 4, window_height / 8))
+
         #Announce Winner And Reset Game
         if self.score1 >= 3:
             textsurface = self.font.render("Pong", False, (255, 255, 255))
-            game_window.blit(textsurface, (window_width / 2.8 , window_height / 9))
+            game_window.blit(textsurface,
+                             (window_width / 2.8, window_height / 9))
             ball.__init__()
 
         #Press Spacebar to reset game
         keystate = pygame.key.get_pressed()
         if keystate[pygame.K_SPACE]:
-           self.score1 = 0
-           ball.__init__() 
-        
+            self.score1 = 0
+            ball.__init__()
+
         #Announce Winner And Reset Game
         if self.score2 >= 3:
             textsurface = self.font.render("Pong", False, (255, 255, 255))
-            game_window.blit(textsurface, (window_width / 2.8 , window_height / 9))
-            ball.__init__()  
+            game_window.blit(textsurface,
+                             (window_width / 2.8, window_height / 9))
+            ball.__init__()
 
         #Press Spacebar to reset game
         keystate = pygame.key.get_pressed()
         if keystate[pygame.K_SPACE]:
             self.score2 = 0
-            ball.__init__()            
+            ball.__init__()
 
 
 # --- Sprite Groups ---
-all_sprites = pygame.sprite.Group()
+player_sprites = pygame.sprite.Group()
 ball_sprite = pygame.sprite.GroupSingle()
 
 player1 = Player1()
-all_sprites.add(player1)
+player_sprites.add(player1)
 player2 = Player2()
-all_sprites.add(player2)
+player_sprites.add(player2)
 ball = Ball()
 ball_sprite.add(ball)
 
@@ -183,7 +189,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
 
-    all_sprites.update()
+    player_sprites.update()
     ball_sprite.update()
     score.update()
 
@@ -193,6 +199,6 @@ while True:
     pygame.draw.rect(game_window, color_white, pygame.Rect(400, 200, 5, 600))
     pygame.draw.rect(game_window, color_white, pygame.Rect(400, 0, 5, 100))
 
-    all_sprites.draw(game_window)
+    player_sprites.draw(game_window)
     ball_sprite.draw(game_window)
     pygame.display.flip()
